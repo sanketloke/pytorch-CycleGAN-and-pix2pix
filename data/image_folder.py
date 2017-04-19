@@ -6,6 +6,7 @@
 ################################################################################
 
 import torch.utils.data as data
+from random import shuffle
 
 from PIL import Image
 import os
@@ -21,9 +22,14 @@ def is_image_file(filename):
     return any(filename.endswith(extension) for extension in IMG_EXTENSIONS)
 
 
-def make_dataset(dir):
+def make_dataset(dir,sort=True):
     images = []
     assert os.path.isdir(dir), '%s is not a valid directory' % dir
+    if sort:
+        q=sorted(os.walk(dir))
+    else:
+        q=shuffle(os.walk(dir))
+
 
     for root, _, fnames in sorted(os.walk(dir)):
         for fname in fnames:
@@ -41,7 +47,7 @@ def default_loader(path):
 class ImageFolder(data.Dataset):
 
     def __init__(self, root, transform=None, return_paths=False,
-                 loader=default_loader):
+                 loader=default_loader,sort=True):
         imgs = make_dataset(root)
         if len(imgs) == 0:
             raise(RuntimeError("Found 0 images in: " + root + "\n"
@@ -59,7 +65,7 @@ class ImageFolder(data.Dataset):
         if self.transform is not None:
             img = self.transform(img)
         if self.return_paths:
-            return img, path
+            return (img, path)
         else:
             return img
 
